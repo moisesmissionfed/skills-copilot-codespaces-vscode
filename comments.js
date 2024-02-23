@@ -1,38 +1,27 @@
 // Create a web server
 
-var http = require('http');
-var url = require('url');
-var fs = require('fs');
-var path = require('path');
-var comments = [];
+const http = require('http')
+const fs = require('fs')
 
-var server = http.createServer(function(req, res) {
-  var urlObj = url.parse(req.url, true);
-  var pathname = urlObj.pathname;
-  if (pathname === '/') {
-    fs.readFile(path.join(__dirname, 'index.html'), function(err, data) {
+const server = http.createServer((req, res) => {
+  if (req.url === '/comments') {
+    fs.readFile('comments.json', (err, data) => {
       if (err) {
-        res.end('read file index.html error');
+        res.writeHead(500, { 'Content-Type': 'application/json' })
+        res.end(JSON.stringify({ error: 'Internal Server Error' }))
+        return
       }
-      res.end(data);
-    });
-  } else if (pathname === '/comment') {
-    var comment = urlObj.query;
-    comments.push(comment);
-    res.end(JSON.stringify(comments));
+      res.writeHead(200, { 'Content-Type': 'application/json' })
+      res.end(data)
+    })
   } else {
-    fs.readFile(path.join(__dirname, pathname), function(err, data) {
-      if (err) {
-        res.end('read file error');
-      }
-      res.end(data);
-    });
+    res.writeHead(404, { 'Content-Type': 'application/json' })
+    res.end(JSON.stringify({ error: 'Not Found' }))
   }
-});
+})
 
-server.listen(8080, function() {
-  console.log('server is listening on 8080');
-});
-```
+server.listen(3000, () => {
+  console.log('Server is listening on port 3000')
+})
+// The server is now listening for requests on port 3000. When a request comes in, it checks the URL. If the URL is /comments, it reads the comments.json file and sends it back as a response. If the URL is anything else, it sends back a 404 Not Found error. This is a simple web server that can be used to serve a JSON file. You can test it by running the server and making a request to http://localhost:3000/comments in your browser or with a tool like curl or Postman.
 
-###
